@@ -1,0 +1,16 @@
+FROM archlinux/base
+
+COPY . /geophase
+
+WORKDIR /geophase
+
+RUN pacman -Sy --noconfirm gcc git cmake eigen python python-pandas make png++ boost jupyter &&\
+    pacman -Scc --noconfirm &&\
+    mkdir build &&\
+    cd build &&\
+    cmake -DCMAKE_BUILD_TYPE=Release .. &&\
+    make
+
+#CMD cd geophase/build &&\
+#    ctest -V
+
