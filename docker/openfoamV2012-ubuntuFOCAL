@@ -1,0 +1,36 @@
+FROM ubuntu:focal
+
+# Set timezone
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
+
+# Minimal prerequisites for OpenFOAM: system OpenMPI and scotch
+RUN apt-get install -y gcc-10 g++-10 \
+    libopenmpi-dev openmpi-bin flex bison \
+    git wget make libscotch-dev zlib1g-dev
+
+# Default gcc/g++ to gcc-10/g++-10
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10
+
+# Clone OpenFOAM and checkout OpenFOAM-v2012
+RUN mkdir /opt/OpenFOAM
+WORKDIR "/opt/OpenFOAM"
+RUN git clone https://develop.openfoam.com/Development/openfoam.git && \
+    mv openfoam OpenFOAM-v2012 && cd OpenFOAM-v2012 && git checkout OpenFOAM-v2012 
+    
+# Build OpenFOAM
+
+WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012"
+
+# - Use bash 
+SHELL ["/bin/bash", "-c"] 
+
+# - Use Ubuntu focal system scotch and ptscotch libraries for decomposition
+COPY scotch.ubuntuFOCAL etc/config.sh/scotch 
+RUN export WM_NCOMPPROCS=42 && \
+    export SCOTCH_INC_DIR=/usr/include/scotch && \
+    export PTSCOTCH_INC_DIR=$SCOTCH_INC_DIR && \
+    export SCOTCH_LIB_DIR=/usr/lib/x86_64-linux-gnu && \
+    export PTSCOTCH_LIB_DIR=$SCOTCH_LIB_DIR && \
+    source ./etc/bashrc && ./Allwmake -l
