@@ -27,7 +27,7 @@ WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012"
 SHELL ["/bin/bash", "-c"] 
 
 # - Use Ubuntu focal system scotch and ptscotch libraries for decomposition
-COPY scotch.ubuntuFOCAL etc/config.sh/scotch 
+COPY scotch.ubuntu-focal etc/config.sh/scotch 
 RUN export WM_NCOMPPROCS=42 && \
     export SCOTCH_INC_DIR=/usr/include/scotch && \
     export PTSCOTCH_INC_DIR=$SCOTCH_INC_DIR && \
