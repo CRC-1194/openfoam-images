@@ -13,6 +13,20 @@ RUN apt-get install -y gcc-10 g++-10 \
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10
 RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10
 
+# Data visualization and processing packages
+RUN apt-get install -y python3 \
+    python3-matplotlib python3-numpy \
+    python3-pandas python3-pip \
+    jupyter-notebook python3-pip \
+    texlive-science pandoc vim
+
+# Default to python3 and pip3 
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10 
+RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 10 
+
+# Install PyFoam for OpenFOAM parameter variation
+RUN pip install PyFoam 
+
 # Clone OpenFOAM and checkout OpenFOAM-v2012
 RUN mkdir /opt/OpenFOAM
 WORKDIR "/opt/OpenFOAM"
@@ -20,13 +34,12 @@ RUN git clone https://develop.openfoam.com/Development/openfoam.git && \
     mv openfoam OpenFOAM-v2012 && cd OpenFOAM-v2012 && git checkout OpenFOAM-v2012 
     
 # Build OpenFOAM
-
 WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012"
 
 # - Use bash 
 SHELL ["/bin/bash", "-c"] 
 
-# - Use Ubuntu focal system scotch and ptscotch libraries for decomposition
+# - Use Ubuntu Focal system scotch and ptscotch libraries for domain decomposition
 COPY scotch.ubuntu-focal etc/config.sh/scotch 
 RUN export WM_NCOMPPROCS=42 && \
     export SCOTCH_INC_DIR=/usr/include/scotch && \
