@@ -1,5 +1,0 @@
-FROM archlinux/base
-
-RUN pacman -Sy --noconfirm gcc git cmake eigen python python-pandas make \
-    png++ boost jupyter python python-pip texlive-core texlive-latexextra && \
-    pacman -Scc --noconfirm 
