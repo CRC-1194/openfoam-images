@@ -7,9 +7,9 @@ RUN apt-get update --fix-missing && \
 # OpenFOAM 
 
 ## Minimal prerequisites for OpenFOAM: system OpenMPI and scotch
-RUN apt-get install -y gcc-10 g++-10 \
+RUN apt-get install --fix-missing -y gcc-10 g++-10 \
     libopenmpi-dev openmpi-bin flex bison \
-    git wget make libscotch-dev zlib1g-dev
+    git wget make libscotch-dev zlib1g-dev unzip
 
 ## Default gcc/g++ to gcc-10/g++-10
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10
