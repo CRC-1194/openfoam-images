@@ -27,6 +27,9 @@ WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012"
 ### Use bash 
 SHELL ["/bin/bash", "-c"] 
 
+### Enable dynamicCode as root 
+COPY dynamicCode.C.root src/OpenFOAM/db/dynamicLibrary/dynamicCode/dynamicCode.C 
+
 ### Compile OpenFOAM with system scotch and ptscotch libraries 
 COPY scotch.ubuntu-focal etc/config.sh/scotch 
 RUN export WM_NCOMPPROCS=42 && \
@@ -39,7 +42,7 @@ RUN export WM_NCOMPPROCS=42 && \
 # Visualization and data processing
 
 ## Visualization packages
-RUN apt-get install -y python3 \
+RUN apt-get update --fix-missing && apt-get install -y python3 \
     python3-matplotlib python3-numpy \
     python3-pandas python3-pip \
     jupyter-notebook jupyter-nbconvert python3-pip \
