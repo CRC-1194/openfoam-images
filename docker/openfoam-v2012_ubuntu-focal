@@ -7,9 +7,9 @@ RUN apt-get update --fix-missing && \
 # OpenFOAM 
 
 ## Minimal prerequisites for OpenFOAM: system OpenMPI and scotch
-RUN apt-get install -y gcc-10 g++-10 \
+RUN apt update && apt-get install --fix-missing -y gcc-10 g++-10 \
     libopenmpi-dev openmpi-bin flex bison \
-    git wget make libscotch-dev zlib1g-dev
+    git wget make libscotch-dev zlib1g-dev unzip
 
 ## Default gcc/g++ to gcc-10/g++-10
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10
@@ -27,6 +27,12 @@ WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012"
 ### Use bash 
 SHELL ["/bin/bash", "-c"] 
 
+### Enable dynamicCode as root 
+COPY dynamicCode.C.root src/OpenFOAM/db/dynamicLibrary/dynamicCode/dynamicCode.C 
+
+### Change C++ standard from c++11 to c++2a
+RUN sed -i 's/c++11/c++2a/' wmake/rules/General/Gcc/c++
+
 ### Compile OpenFOAM with system scotch and ptscotch libraries 
 COPY scotch.ubuntu-focal etc/config.sh/scotch 
 RUN export WM_NCOMPPROCS=42 && \
@@ -36,10 +42,24 @@ RUN export WM_NCOMPPROCS=42 && \
     export PTSCOTCH_LIB_DIR=$SCOTCH_LIB_DIR && \
     source ./etc/bashrc && ./Allwmake -l
 
+### Compile and install OpenFOAM submodules: required to use cfMesh
+RUN git submodule init && git submodule status && git submodule update
+WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012/modules"
+RUN export WM_NCOMPPROCS=42 && \
+    source ../etc/bashrc && \
+    ./Allwmake
+
+
+# Project dependencies
+
+## Install project dependencies
+RUN apt-get update --fix-missing && apt-get install -y cmake gmsh
+
+
 # Visualization and data processing
 
 ## Visualization packages
-RUN apt-get install -y python3 \
+RUN apt-get update --fix-missing && apt-get install -y python3 \
     python3-matplotlib python3-numpy \
     python3-pandas python3-pip \
     jupyter-notebook jupyter-nbconvert python3-pip \
@@ -51,4 +71,3 @@ RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 10
 
 ## Install PyFoam for OpenFOAM parameter variation
 RUN pip install PyFoam 
-
