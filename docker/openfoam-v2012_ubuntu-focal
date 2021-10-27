@@ -53,21 +53,20 @@ RUN export WM_NCOMPPROCS=42 && \
 # Project dependencies
 
 ## Install project dependencies
-RUN apt-get update --fix-missing && apt-get install -y cmake gmsh
+RUN apt-get update --fix-missing && apt-get install -y cmake gmsh \
+    texlive-full pandoc vim curl
 
+## Visualization and data processing
+RUN apt-get update --fix-missing && apt-get install -y python3.9-full 
 
-# Visualization and data processing
+## Default to python3.9 and pip3.9
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 10 
 
-## Visualization packages
-RUN apt-get update --fix-missing && apt-get install -y python3 \
-    python3-matplotlib python3-numpy \
-    python3-pandas python3-pip \
-    jupyter-notebook jupyter-nbconvert python3-pip \
-    texlive-full pandoc vim
+## Get pip3.9 on Ubuntu 20.04
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.9 get-pip.py && which pip && pip --version 
 
-## Default to python3 and pip3 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10 
-RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 10 
+## Python3.9 packages 
+RUN pip install matplotlib numpy pandas notebook \ 
+    nbconvert PyFoam
 
-## Install PyFoam for OpenFOAM parameter variation
-RUN pip install PyFoam 
