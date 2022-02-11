@@ -9,26 +9,27 @@ RUN apt-get update --fix-missing && \
 ## Minimal prerequisites for OpenFOAM: system OpenMPI and scotch
 RUN apt update && apt-get install --fix-missing -y gcc-10 g++-10 \
     libopenmpi-dev openmpi-bin flex bison \
-    git wget make libscotch-dev zlib1g-dev unzip
+    git wget make libscotch-dev zlib1g-dev unzip \
+    apt-transport-https ca-certificates
 
 ## Default gcc/g++ to gcc-10/g++-10
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10
 RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10
 
-## Clone OpenFOAM and checkout OpenFOAM-v2012
+## Clone OpenFOAM and checkout OpenFOAM-v2112
 RUN mkdir /opt/OpenFOAM
 WORKDIR "/opt/OpenFOAM"
 RUN git clone https://develop.openfoam.com/Development/openfoam.git && \
-    mv openfoam OpenFOAM-v2012 && cd OpenFOAM-v2012 && git checkout OpenFOAM-v2012 
+    mv openfoam OpenFOAM-v2112 && cd OpenFOAM-v2112 && git checkout OpenFOAM-v2112 
     
 ## Building OpenFOAM
-WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012"
+WORKDIR "/opt/OpenFOAM/OpenFOAM-v2112"
 
 ### Use bash 
 SHELL ["/bin/bash", "-c"] 
 
 ### Enable dynamicCode as root 
-COPY dynamicCode.C.v2012 src/OpenFOAM/db/dynamicLibrary/dynamicCode/dynamicCode.C 
+COPY dynamicCode.C.v2112 src/OpenFOAM/db/dynamicLibrary/dynamicCode/dynamicCode.C 
 
 ### Change C++ standard from c++11 to c++2a
 RUN sed -i 's/c++11/c++2a/' wmake/rules/General/Gcc/c++
@@ -44,11 +45,10 @@ RUN export WM_NCOMPPROCS=42 && \
 
 ### Compile and install OpenFOAM submodules: required to use cfMesh
 RUN git submodule init && git submodule status && git submodule update
-WORKDIR "/opt/OpenFOAM/OpenFOAM-v2012/modules"
+WORKDIR "/opt/OpenFOAM/OpenFOAM-v2112/modules"
 RUN export WM_NCOMPPROCS=42 && \
     source ../etc/bashrc && \
     ./Allwmake
-
 
 # Project dependencies
 
@@ -68,5 +68,7 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
 
 ## Python3.9 packages 
 RUN pip install matplotlib numpy pandas notebook \ 
-    nbconvert PyFoam
+    nbconvert PyFoam jupyter-client==6.1.12
+
+RUN apt-get -y install libeigen3-dev
 
